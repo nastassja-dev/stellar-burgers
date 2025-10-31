@@ -26,7 +26,6 @@ export const ResetPassword: FC = () => {
       navigate('/forgot-password', { replace: true });
     }
   }, [navigate]);
-
   return (
     <ResetPasswordUI
       errorText={error?.message}

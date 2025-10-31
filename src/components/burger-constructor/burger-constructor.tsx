@@ -1,25 +1,23 @@
 import { FC, useMemo } from 'react';
 import { TConstructorIngredient } from '@utils-types';
 import { BurgerConstructorUI } from '@ui';
+import { useAppDispatch, useAppSelector } from '../../services/store';
+import { clearConstructor, selectConstructor } from '@slices';
+import { createOrderThunk } from '@thunks';
 
 export const BurgerConstructor: FC = () => {
-  /** TODO: взять переменные constructorItems, orderRequest и orderModalData из стора */
+  const dispatch = useAppDispatch();
+  // Переменные из стора для constructorItems, orderRequest и orderModalData
+  const { bun, ingredients } = useAppSelector(selectConstructor);
   const constructorItems = {
-    bun: {
-      price: 0
-    },
-    ingredients: []
+    bun,
+    ingredients
   };
+  // Запрос на оформление заказа и данные для модального окна из стора
+  const orderRequest = useAppSelector((s) => s.orders.isLoading);
+  const orderModalData = useAppSelector((s) => s.orders.currentOrder ?? null);
 
-  const orderRequest = false;
-
-  const orderModalData = null;
-
-  const onOrderClick = () => {
-    if (!constructorItems.bun || orderRequest) return;
-  };
-  const closeOrderModal = () => {};
-
+  // Вычисляем итоговую цену
   const price = useMemo(
     () =>
       (constructorItems.bun ? constructorItems.bun.price * 2 : 0) +
@@ -30,7 +28,11 @@ export const BurgerConstructor: FC = () => {
     [constructorItems]
   );
 
-  return null;
+  const onOrderClick = () => {
+    if (!bun || orderRequest) return;
+    // Оформление заказа
+    dispatch(createOrderThunk(ingredients.map((item) => item._id ?? '')));
+  };
 
   return (
     <BurgerConstructorUI
@@ -39,7 +41,7 @@ export const BurgerConstructor: FC = () => {
       constructorItems={constructorItems}
       orderModalData={orderModalData}
       onOrderClick={onOrderClick}
-      closeOrderModal={closeOrderModal}
+      closeOrderModal={() => dispatch(clearConstructor())}
     />
   );
 };
