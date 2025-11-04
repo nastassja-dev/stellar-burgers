@@ -2,7 +2,6 @@ import { FC, useEffect } from 'react';
 import { TOrder } from '@utils-types';
 import { FeedInfoUI } from '../ui/feed-info';
 import { useAppDispatch, useAppSelector } from '../../services/store';
-import { fetchFeedThunk } from '@thunks';
 
 const getOrders = (orders: TOrder[], status: string): number[] =>
   orders

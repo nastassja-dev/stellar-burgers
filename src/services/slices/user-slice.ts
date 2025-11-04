@@ -90,7 +90,7 @@ export const userSlice = createSlice({
       .addCase(fetchUserThunk.rejected, (state) => {
         state.loading = false;
         state.user = null;
-        state.isAuthChecked = true; // важно — чтобы приложение знало, что проверка завершена
+        state.isAuthChecked = true;
       })
 
       // Profile update

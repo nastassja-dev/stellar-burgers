@@ -2,8 +2,12 @@ import { useEffect } from 'react';
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import '../../index.css';
 import styles from './app.module.css';
-import { fetchIngredients } from '@thunks';
-import { selectIngredientsError, selectShowPreloader } from '@slices';
+import { fetchIngredients, fetchUserThunk, setIsAuthChecked } from '@thunks';
+import {
+  selectIngredientsError,
+  selectIsAuthChecked,
+  selectShowPreloader
+} from '@slices';
 import {
   ConstructorPage,
   Feed,
@@ -17,8 +21,6 @@ import {
 } from '@pages';
 import { AppHeader, IngredientDetails, Modal, OrderInfo } from '@components';
 import { ProtectedRoute, UnAuthRoute } from '../protected-route/index';
-// import { checkUserAuth, setIsAuthChecked } from '../../services/user/actions';
-// import { getIngredientsThunk } from '../../services/ingredients/actions';
 import { useAppDispatch, useAppSelector } from '../../services/store';
 import { Preloader } from '../ui/preloader';
 
@@ -26,27 +28,45 @@ const App = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // backgroundLocation используется для модалок
   const background = location.state?.background;
-  //const ingredients: TIngredient[] = useSelector(selectIngredients);
-  //const count = useAppSelector((s) => s.ingredients.ingredients.length);
 
   // root-aware селекторы из store
   const showPreloader = useAppSelector(selectShowPreloader);
   const error = useAppSelector(selectIngredientsError);
+  const isAuthChecked = useAppSelector(selectIsAuthChecked);
 
-  // проверяем авторизацию
-  /*useEffect(() => {
-    dispatch(checkUserAuth()).finally(() => dispatch(setIsAuthChecked(true)));
-  }, [dispatch]);*/
+  // Проверяем авторизацию при старте приложения
+  useEffect(() => {
+    const initAuth = async () => {
+      const hasRefresh = localStorage.getItem('refreshToken');
+
+      if (hasRefresh) {
+        try {
+          await dispatch(fetchUserThunk());
+        } catch (err) {
+          console.error('Auth check failed', err);
+        }
+      }
+
+      dispatch(setIsAuthChecked(true));
+    };
+    initAuth();
+  }, [dispatch]);
 
   // Загружаем ингредиенты при первом рендере
   useEffect(() => {
     dispatch(fetchIngredients());
   }, [dispatch]);
 
-  const handleCloseModal = () => navigate(-1);
+  // Закрытие модалки — возврат к предыдущему местоположению
+  const handleCloseModal = () => {
+    navigate(background?.pathname || '/');
+  };
 
-  if (showPreloader) {
+  // Пока авторизация не проверена — показываем прелоадер
+  if (!isAuthChecked || showPreloader) {
     return (
       <div className={styles.app}>
         <AppHeader />

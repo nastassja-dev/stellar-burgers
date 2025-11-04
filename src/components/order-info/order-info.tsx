@@ -1,14 +1,26 @@
-import { FC, useMemo } from 'react';
+import { FC, useEffect, useMemo } from 'react';
 import { Preloader, OrderInfoUI } from '@ui';
 import { TIngredient } from '@utils-types';
-import { useAppSelector } from '../../services/store';
+import { useAppDispatch, useAppSelector } from '../../services/store';
+import { useParams } from 'react-router-dom';
+import { fetchOrderByNumberThunk } from '@thunks';
 
 export const OrderInfo: FC = () => {
-  //Переменные из стора для заказа и ингредиентов
+  // Переменные из стора для заказа и ингредиентов
   const orderData = useAppSelector((s) => s.orders.currentOrder);
   const ingredients: TIngredient[] = useAppSelector(
     (s) => s.ingredients.ingredients
   );
+  const dispatch = useAppDispatch();
+  const { number } = useParams<{ number: string }>();
+
+  // Если нет данных — подгружаем заказ
+  useEffect(() => {
+    if (number && (!orderData || orderData.number !== Number(number))) {
+      dispatch(fetchOrderByNumberThunk(Number(number)));
+    }
+  }, [dispatch, number]);
+
   // Готовим данные для отображения
   const orderInfo = useMemo(() => {
     if (!orderData || !ingredients.length) return null;

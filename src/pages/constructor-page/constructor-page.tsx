@@ -5,15 +5,15 @@ import styles from './constructor-page.module.css';
 import { BurgerIngredients } from '../../components';
 import { BurgerConstructor } from '../../components';
 import { Preloader } from '../../components/ui';
-import { FC, useEffect } from 'react';
+import { FC } from 'react';
 import {
   selectIngredients,
   selectIngredientsError,
   selectIngredientsLoading,
   selectShowPreloader
 } from '@slices';
-import { fetchIngredients } from '@thunks';
 
+// загрузка ингредиентов в `App`
 export const ConstructorPage: FC = () => {
   // Переменная из стора
   const dispatch = useAppDispatch();
@@ -23,12 +23,7 @@ export const ConstructorPage: FC = () => {
   const error = useAppSelector(selectIngredientsError);
   const showPreloader = useAppSelector(selectShowPreloader);
 
-  useEffect(() => {
-    // Запрашиваем ингредиенты только если их ещё нет
-    if (!ingredients || ingredients.length === 0) {
-      dispatch(fetchIngredients());
-    }
-  }, [dispatch, ingredients]);
+  // Данные ингредиентов загружаются в `App` при первом рендере
 
   if (isLoading && (!ingredients || ingredients.length === 0)) {
     return <Preloader />;

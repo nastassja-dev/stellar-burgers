@@ -8,11 +8,19 @@ export const fetchIngredients = createAsyncThunk<
   { rejectValue: string }
 >('ingredients/fetchIngredients', async (_, { rejectWithValue }) => {
   try {
-    const res = await getIngredientsApi();
-    if (!res || !Array.isArray(res)) {
+    // указываем unknown, чтобы TS не ругался на .data
+    const res = (await getIngredientsApi()) as
+      | { data?: TIngredient[] }
+      | TIngredient[];
+
+    // если API возвращает объект с data — достаём её
+    const ingredients = Array.isArray(res) ? res : res.data;
+
+    if (!Array.isArray(ingredients)) {
       throw new Error('Ошибка при загрузке ингредиентов');
     }
-    return res;
+
+    return ingredients;
   } catch (err: any) {
     return rejectWithValue(err.message);
   }

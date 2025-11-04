@@ -1,4 +1,3 @@
-// src/services/constructor-slice.ts
 import { createSlice, nanoid, PayloadAction } from '@reduxjs/toolkit';
 import { TConstructorIngredient, TIngredient } from '@utils-types';
 import { RootState } from '../../services/store';
@@ -6,9 +5,6 @@ import { RootState } from '../../services/store';
 type ConstructorState = {
   bun: TConstructorIngredient | null;
   ingredients: TConstructorIngredient[];
-  // orderRequest и orderModalData будут добавлены на следующем шаге
-  // orderRequest: boolean;
-  // orderModalData: any | null;
 };
 
 const initialState: ConstructorState = {
@@ -22,7 +18,6 @@ export const constructorSlice = createSlice({
   reducers: {
     addIngredient: {
       reducer: (state, action: PayloadAction<TConstructorIngredient>) => {
-        console.log('ADDED TO CONSTRUCTOR SLICE:', action.payload);
         if (action.payload.type === 'bun') {
           // заменяем текущую булку
           state.bun = action.payload;

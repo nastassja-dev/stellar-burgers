@@ -11,7 +11,6 @@ export const BurgerIngredient: FC<TBurgerIngredientProps> = memo(
     const location = useLocation();
     const dispatch = useAppDispatch();
     const handleAdd = () => {
-      console.log('ADD TO CONSTRUCTOR:', ingredient);
       dispatch(addIngredient(ingredient));
     };
 

@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { TIngredient } from '@utils-types';
 import { fetchIngredients } from '@thunks';
-import { RootState } from '../store'; // для типизации селекторов
+import { RootState } from '../store';
 
 type Ingredient = TIngredient;
 

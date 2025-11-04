@@ -1,4 +1,3 @@
-// /Users/nastyakam/Downloads/dev/stellar-burgers/src/services/actions/order-actions.ts
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { TOrder } from '@utils-types';
 import {
@@ -22,17 +21,6 @@ export const fetchFeedThunk = createAsyncThunk<
     return rejectWithValue(err.message || 'Ошибка загрузки ленты заказов');
   }
 });
-
-/*export const fetchFeedThunk = createAsyncThunk(..., async (_, { rejectWithValue }) => {
-  try {
-    const data = await getFeedsApi();      // { orders, total, totalToday }
-    console.log('fetchFeedThunk data:', data);
-    return data;
-  } catch (err: any) {
-    console.error('fetchFeedThunk error:', err);
-    return rejectWithValue(err.message || 'Ошибка загрузки ленты заказов');
-  }
-});*/
 
 export const fetchOrderByNumberThunk = createAsyncThunk<
   TOrder | undefined,
@@ -70,7 +58,7 @@ export const createOrderThunk = createAsyncThunk<
   async (ingredientsIds, { dispatch, rejectWithValue }) => {
     try {
       const data = await orderBurgerApi(ingredientsIds); // { order, name }
-      // после успеха обновим список заказов пользователя
+      // после успеха обновить список заказов пользователя
       queueMicrotask(() => dispatch(fetchUserOrdersThunk()));
       return data.order;
     } catch (err: any) {

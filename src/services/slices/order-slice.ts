@@ -1,4 +1,3 @@
-// /Users/nastyakam/Downloads/dev/stellar-burgers/src/services/order-slice.ts
 import { createSlice } from '@reduxjs/toolkit';
 import { TOrder } from '@utils-types';
 import {
@@ -31,7 +30,11 @@ const initialState: OrdersState = {
 export const ordersSlice = createSlice({
   name: 'orders',
   initialState,
-  reducers: {},
+  reducers: {
+    clearOrder(state) {
+      state.currentOrder = undefined;
+    }
+  },
   extraReducers: (builder) => {
     builder
       // feed
@@ -40,7 +43,6 @@ export const ordersSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchFeedThunk.fulfilled, (state, action) => {
-        console.log('orders fulfilled payload:', action.payload);
         state.isLoading = false;
         state.feed = action.payload.orders;
         state.total = action.payload.total;
@@ -96,4 +98,5 @@ export const ordersSlice = createSlice({
   }
 });
 
+export const { clearOrder } = ordersSlice.actions;
 export default ordersSlice.reducer;
