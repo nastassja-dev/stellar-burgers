@@ -8,7 +8,6 @@ import {
   fetchUserThunk,
   setIsAuthChecked
 } from '../thunks/user-thunks';
-import { setCookie, deleteCookie } from '../../utils/cookie';
 
 // State
 export interface UserState {
@@ -51,8 +50,6 @@ export const userSlice = createSlice({
       .addCase(registerUserThunk.fulfilled, (state, action) => {
         state.loading = false;
         state.user = action.payload.user;
-        setCookie('accessToken', action.payload.accessToken);
-        localStorage.setItem('refreshToken', action.payload.refreshToken);
         state.isAuthChecked = true;
       })
       .addCase(registerUserThunk.rejected, (state, action) => {
@@ -68,8 +65,6 @@ export const userSlice = createSlice({
       .addCase(loginUserThunk.fulfilled, (state, action) => {
         state.loading = false;
         state.user = action.payload.user;
-        setCookie('accessToken', action.payload.accessToken);
-        localStorage.setItem('refreshToken', action.payload.refreshToken);
         state.isAuthChecked = true;
       })
       .addCase(loginUserThunk.rejected, (state, action) => {
@@ -100,7 +95,10 @@ export const userSlice = createSlice({
       })
       .addCase(updateUserThunk.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload.user;
+        const payload = action.payload;
+        if (payload && 'user' in payload) {
+          state.user = payload.user;
+        }
       })
       .addCase(updateUserThunk.rejected, (state, action) => {
         state.loading = false;
@@ -115,8 +113,6 @@ export const userSlice = createSlice({
       .addCase(logoutUserThunk.fulfilled, (state) => {
         state.loading = false;
         state.user = null;
-        deleteCookie('accessToken');
-        localStorage.removeItem('refreshToken');
       })
       .addCase(logoutUserThunk.rejected, (state, action) => {
         state.loading = false;

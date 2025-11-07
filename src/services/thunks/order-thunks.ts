@@ -6,49 +6,63 @@ import {
   getOrdersApi,
   orderBurgerApi
 } from '@api';
+import { clearConstructor } from '@slices';
 
 type FeedsPayload = { orders: TOrder[]; total: number; totalToday: number };
 
+// Получение общей ленты заказов
 export const fetchFeedThunk = createAsyncThunk<
   FeedsPayload,
   void,
   { rejectValue: string }
 >('orders/fetchFeed', async (_, { rejectWithValue }) => {
   try {
-    return await getFeedsApi();
-  } catch (err: any) {
+    const data = await getFeedsApi();
+    return data;
+  } catch (err: unknown) {
     console.error('fetchFeedThunk error:', err);
-    return rejectWithValue(err.message || 'Ошибка загрузки ленты заказов');
+    if (err instanceof Error) {
+      return rejectWithValue(err.message);
+    }
+    return rejectWithValue('Ошибка загрузки ленты заказов');
   }
 });
 
+// Получение заказа по его номеру
 export const fetchOrderByNumberThunk = createAsyncThunk<
   TOrder | undefined,
   number,
   { rejectValue: string }
 >('orders/fetchOrderByNumber', async (number, { rejectWithValue }) => {
   try {
-    const data = await getOrderByNumberApi(number); // { orders: TOrder[] }
+    const data = await getOrderByNumberApi(number);
     return data.orders[0];
-  } catch (err: any) {
-    return rejectWithValue(err.message ?? 'Не удалось получить заказ');
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      return rejectWithValue(err.message);
+    }
+    return rejectWithValue('Не удалось получить заказ');
   }
 });
 
+// Получение заказов пользователя
 export const fetchUserOrdersThunk = createAsyncThunk<
   TOrder[],
   void,
   { rejectValue: string }
 >('orders/fetchUserOrders', async (_, { rejectWithValue }) => {
   try {
-    return await getOrdersApi(); // TOrder[]
-  } catch (err: any) {
-    return rejectWithValue(
-      err.message ?? 'Не удалось получить заказы пользователя'
-    );
+    const data = await getOrdersApi();
+    return data;
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      return rejectWithValue(err.message);
+    }
+    return rejectWithValue('Не удалось получить заказы пользователя');
   }
 });
 
+// Создание нового заказа
 export const createOrderThunk = createAsyncThunk<
   TOrder,
   string[],
@@ -57,12 +71,20 @@ export const createOrderThunk = createAsyncThunk<
   'orders/createOrder',
   async (ingredientsIds, { dispatch, rejectWithValue }) => {
     try {
-      const data = await orderBurgerApi(ingredientsIds); // { order, name }
-      // после успеха обновить список заказов пользователя
+      const data = await orderBurgerApi(ingredientsIds);
+
+      // Очистка конструктора после успешного создания заказа
+      dispatch(clearConstructor());
+
+      // После успеха обновить список заказов пользователя
       queueMicrotask(() => dispatch(fetchUserOrdersThunk()));
+
       return data.order;
-    } catch (err: any) {
-      return rejectWithValue(err.message ?? 'Не удалось создать заказ');
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        return rejectWithValue(err.message);
+      }
+      return rejectWithValue('Не удалось создать заказ');
     }
   }
 );

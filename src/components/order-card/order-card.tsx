@@ -1,50 +1,61 @@
-import { FC, memo, useMemo } from 'react';
-import { useLocation } from 'react-router-dom';
+import { FC, memo, useEffect, useMemo } from 'react';
+import { useLocation, useParams } from 'react-router-dom';
 
 import { OrderCardProps } from './type';
 import { TIngredient } from '@utils-types';
 import { OrderCardUI } from '../ui/order-card';
-import { useAppSelector } from '../../services/store';
+import { useAppSelector, useAppDispatch } from '../../services/store';
+import { fetchOrderByNumberThunk } from '@thunks';
 
 const maxIngredients = 6;
-
 export const OrderCard: FC<OrderCardProps> = memo(({ order }) => {
   const location = useLocation();
+  const dispatch = useAppDispatch();
 
-  //Переменная из стора для ингредиентов
+  // Получаем номер заказа из URL
+  const { number } = useParams<{ number: string }>();
+  const orderNumber = Number(number);
+
+  // Загружаем текущий заказ из стора
+  const currentOrder = useAppSelector((state) => state.orders.currentOrder);
+
+  // Ингредиенты из стора
   const ingredients = useAppSelector((s) => s.ingredients.ingredients);
 
-  const orderInfo = useMemo(() => {
-    if (!ingredients.length) return null;
+  // Загружаем заказ при монтировании
+  useEffect(() => {
+    if (orderNumber) {
+      dispatch(fetchOrderByNumberThunk(orderNumber));
+    }
+  }, [dispatch, orderNumber]);
 
-    const ingredientsInfo = order.ingredients.reduce(
-      (acc: TIngredient[], item: string) => {
-        const ingredient = ingredients.find((ing) => ing._id === item);
-        if (ingredient) return [...acc, ingredient];
-        return acc;
-      },
-      []
-    );
+  // Формируем данные для UI
+  const orderInfo = useMemo(() => {
+    const targetOrder = order || currentOrder;
+    if (!targetOrder || !ingredients.length) return null;
+
+    const ingredientsInfo = targetOrder.ingredients
+      .map((id) => ingredients.find((ing) => ing._id === id))
+      .filter(Boolean) as TIngredient[];
 
     const total = ingredientsInfo.reduce((acc, item) => acc + item.price, 0);
-
     const ingredientsToShow = ingredientsInfo.slice(0, maxIngredients);
-
     const remains =
       ingredientsInfo.length > maxIngredients
         ? ingredientsInfo.length - maxIngredients
         : 0;
 
-    const date = new Date(order.createdAt);
+    const date = new Date(targetOrder.createdAt);
+
     return {
-      ...order,
+      ...targetOrder,
       ingredientsInfo,
       ingredientsToShow,
       remains,
       total,
       date
     };
-  }, [order, ingredients]);
+  }, [order, currentOrder, ingredients]);
 
   if (!orderInfo) return null;
 
