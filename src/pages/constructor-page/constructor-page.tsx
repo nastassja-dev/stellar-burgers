@@ -1,4 +1,4 @@
-import { useSelector } from '../../services/store';
+import { useAppDispatch, useAppSelector } from '../../services/store';
 
 import styles from './constructor-page.module.css';
 
@@ -6,14 +6,40 @@ import { BurgerIngredients } from '../../components';
 import { BurgerConstructor } from '../../components';
 import { Preloader } from '../../components/ui';
 import { FC } from 'react';
+import {
+  selectIngredients,
+  selectIngredientsError,
+  selectIngredientsLoading,
+  selectShowPreloader
+} from '@slices';
 
+// загрузка ингредиентов в `App`
 export const ConstructorPage: FC = () => {
-  /** TODO: взять переменную из стора */
-  const isIngredientsLoading = false;
+  // Переменная из стора
+  const dispatch = useAppDispatch();
+
+  const ingredients = useAppSelector(selectIngredients);
+  const isLoading = useAppSelector(selectIngredientsLoading);
+  const error = useAppSelector(selectIngredientsError);
+  const showPreloader = useAppSelector(selectShowPreloader);
+
+  // Данные ингредиентов загружаются в `App` при первом рендере
+
+  if (isLoading && (!ingredients || ingredients.length === 0)) {
+    return <Preloader />;
+  }
+
+  if (error) {
+    return (
+      <p className='text text_type_main-medium mt-10'>
+        Ошибка загрузки ингредиентов: {error}
+      </p>
+    );
+  }
 
   return (
     <>
-      {isIngredientsLoading ? (
+      {showPreloader ? (
         <Preloader />
       ) : (
         <main className={styles.containerMain}>
